@@ -1,0 +1,79 @@
+/* ======== AJUSTE DEL LAYOUT GENERAL ======== */
+body {
+    background-color: #f8f9fa;
+}
+
+/* El contenedor principal se adapta correctamente */
+.d-flex {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+/* Sidebar fijo a la izquierda */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 240px;
+    background-color: #212529;
+    color: white;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* ======== CONTENIDO PRINCIPAL ======== */
+main {
+    margin-left: 250px; /* separa el contenido del menú */
+    padding: 30px;
+    width: calc(100% - 250px);
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* ======== ENCABEZADOS ======== */
+h2 {
+    color: #0d6efd;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 8px;
+    margin-bottom: 25px;
+}
+
+/* ======== TABLAS ======== */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* ======== BOTONES ======== */
+.btn-primary {
+    background-color: #0d6efd;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+
+/* ======== MENÚ LATERAL ======== */
+.sidebar h4 {
+    color: #fff;
+    font-weight: 600;
+}
+
+.sidebar .nav-link {
+    font-size: 16px;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #d1d1d1;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
