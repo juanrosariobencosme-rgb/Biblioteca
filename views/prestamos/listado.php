@@ -1,5 +1,7 @@
 <?php
-require_once "../../config/db.php";
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+require "../../config/db.php";
 include "../layout/header.php";
 
 // Procesar acciones de devolución o renovación
@@ -11,20 +13,20 @@ if (isset($_GET['accion']) && isset($_GET['id'])) {
         $pdo->beginTransaction();
 
         // Buscar préstamo y ejemplar relacionado
-        $stmt = $pdo->prepare("SELECT id_ejemplar FROM prestamos WHERE id_prestamo = ?");
+        $stmt = $pdo->prepare("SELECT id_ejemplar FROM prestamo WHERE id_prestamo = ?");
         $stmt->execute([$id]);
         $prestamo = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($accion === 'devolver') {
             // Actualizar préstamo
-            $pdo->prepare("UPDATE prestamos SET estado='Devuelto', fecha_devolucion_real=CURDATE() WHERE id_prestamo=?")
+            $pdo->prepare("UPDATE prestamo SET estado='Devuelto', fecha_devolucion_real=CURDATE() WHERE id_prestamo=?")
                 ->execute([$id]);
             // Cambiar ejemplar a disponible
             $pdo->prepare("UPDATE ejemplares SET estado='Disponible' WHERE id_ejemplar=?")
                 ->execute([$prestamo['id_ejemplar']]);
         } elseif ($accion === 'renovar') {
             // Extender fecha de devolución 7 días más
-            $pdo->prepare("UPDATE prestamos 
+            $pdo->prepare("UPDATE prestamo 
                            SET estado='Renovado', 
                                fecha_devolucion_prevista = DATE_ADD(fecha_devolucion_prevista, INTERVAL 7 DAY) 
                            WHERE id_prestamo=?")
@@ -47,8 +49,8 @@ if (isset($_GET['accion']) && isset($_GET['id'])) {
 $stmt = $pdo->query("
     SELECT p.id_prestamo, u.nombre AS usuario, l.titulo AS libro, 
            p.fecha_prestamo, p.fecha_devolucion_prevista, p.estado
-    FROM prestamos p
-    JOIN usuarios u ON p.id_usuario = u.id_usuario
+    FROM prestamo p
+    JOIN usuario u ON p.id_usuario = u.id_usuario
     JOIN ejemplares e ON p.id_ejemplar = e.id_ejemplar
     JOIN libro l ON e.id_libro = l.id_libro
     ORDER BY p.id_prestamo DESC

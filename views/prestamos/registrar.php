@@ -1,9 +1,11 @@
 <?php
+  error_reporting(E_ALL);
+  ini_set('display_errors', 1);
 require_once "../../config/db.php";
 include "../layout/header.php";
 
 // Obtener listas de usuarios activos y ejemplares disponibles
-$usuarios = $pdo->query("SELECT id_usuario, nombre FROM usuarios WHERE estado = 'Activo'")->fetchAll(PDO::FETCH_ASSOC);
+$usuarios = $pdo->query("SELECT id_usuario, nombre FROM usuario WHERE estado = 'Activo'")->fetchAll(PDO::FETCH_ASSOC);
 $ejemplares = $pdo->query("
     SELECT e.id_ejemplar, l.titulo 
     FROM ejemplares e 
@@ -23,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Insertar préstamo
         $stmt = $pdo->prepare("
-            INSERT INTO prestamos (id_usuario, id_ejemplar, fecha_prestamo, fecha_devolucion_prevista, estado)
+            INSERT INTO prestamo (id_usuario, id_ejemplar, fecha_prestamo, fecha_devolucion_prevista, estado)
             VALUES (?, ?, ?, ?, 'Prestado')
         ");
         $stmt->execute([$id_usuario, $id_ejemplar, $fecha_prestamo, $fecha_devolucion_prevista]);
