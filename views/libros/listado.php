@@ -49,6 +49,7 @@ try {
   </form>
 
   <!-- Tabla de Libros -->
+   <a href="registro.php" class="btn btn-primary mb-3"><i class="fa fa-plus"></i> Nuevo libro</a>
   <table class="table table-striped table-hover">
     <thead class="table-primary">
       <tr>
