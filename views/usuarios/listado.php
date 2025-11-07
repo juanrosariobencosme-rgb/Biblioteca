@@ -2,26 +2,39 @@
 include('../layout/header.php'); 
 require "../../config/db.php";
 
-
-
+try {
+    if (isset($_GET['id'])) {
+        // Obtener un solo usuario (por ID)
+        $stmt = $pdo->prepare("SELECT * FROM usuario WHERE id_usuario = ?");
+        $stmt->execute([$_GET['id']]);
+        $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        // Obtener todos los usuarios
+        $stmt = $pdo->query("SELECT * FROM usuario");
+        $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (Exception $e) {
+    echo "<script>alert('❌ Error al obtener usuarios: {$e->getMessage()}');</script>";
+}
 ?>
 
 <div class="container mt-4">
     <h2>📚 Listado de usuarios</h2>
-    <a href="registrar.php" class="btn btn-primary mb-3"><i class="fa fa-plus"></i> Nuevo Usuario</a>
+    <a href="registrar.php" class="btn btn-primary mb-3"><i class="fa fa-plus"></i> Nuevo usuario</a>
+    <a href="registrar.php" class="btn btn-secondary mb-3"><i class="fa fa-user-cog"></i> Administrar usuarios</a>
 
     <table class="table table-bordered table-striped">
         <thead class="table-primary">
             <tr>
-                <th>Id-usuario</th>
-                <th>nombre</th>
-                <th>tipo de usuario</th>
-                <th>email</th>
-                <th>telefono</th>
-                <th>fecha de registro</th>
-                <th>estado</th>
-                <th>deuda</th>
-                <th>maximo de libros</th>
+                <th>ID Usuario</th>
+                <th>Nombre</th>
+                <th>Tipo de Usuario</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Fecha de Registro</th>
+                <th>Estado</th>
+                <th>Deuda</th>
+                <th>Máx. Libros</th>
             </tr>
         </thead>
         <tbody>
@@ -30,34 +43,15 @@ require "../../config/db.php";
             <?php else: ?>
                 <?php foreach ($usuarios as $u): ?>
                     <tr>
-                        <td><?= $u['id_usuario'] ?></td>
-                        <td><?= htmlspecialchars($u['usuario']) ?></td>
-                        <td><?= htmlspecialchars($u['libro']) ?></td>
-                        <td><?= $u['fecha_prestamo'] ?></td>
-                        <td><?= $u['fecha_devolucion_prevista'] ?></td>
-                        <td>
-                            <?php if ($u['estado'] === 'Prestado'): ?>
-                                <span class="badge bg-warning text-dark"><?= $u['estado'] ?></span>
-                            <?php elseif ($u['estado'] === 'Devuelto'): ?>
-                                <span class="badge bg-success"><?= $u['estado'] ?></span>
-                            <?php elseif ($u['estado'] === 'Renovado'): ?>
-                                <span class="badge bg-info text-dark"><?= $u['estado'] ?></span>
-                            <?php else: ?>
-                                <span class="badge bg-secondary"><?= $u['estado'] ?></span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <?php if ($u['estado'] === 'Prestado' || $u['estado'] === 'Renovado'): ?>
-                                <a href="?accion=devolver&id=<?= $u['id_prestamo'] ?>" class="btn btn-success btn-sm" onclick="return confirm('¿Marcar como devuelto?')">
-                                    <i class="fa fa-rotate-left"></i> Devolver
-                                </a>
-                                <a href="?accion=renovar&id=<?= $u['id_prestamo'] ?>" class="btn btn-info btn-sm" onclick="return confirm('¿Renovar este préstamo por 7 días más?')">
-                                    <i class="fa fa-sync"></i> Renovar
-                                </a>
-                            <?php else: ?>
-                                <span class="text-muted">Sin acciones</span>
-                            <?php endif; ?>
-                        </td>
+                        <td><?= htmlspecialchars($u['id_usuario']) ?></td>
+                        <td><?= htmlspecialchars($u['nombre']) ?></td>
+                        <td><?= htmlspecialchars($u['tipo_usuario']) ?></td>
+                        <td><?= htmlspecialchars($u['email']) ?></td>
+                        <td><?= htmlspecialchars($u['telefono']) ?></td>
+                        <td><?= htmlspecialchars($u['fecha_registro']) ?></td>
+                        <td><?= htmlspecialchars($u['estado']) ?></td>
+                        <td><?= htmlspecialchars($u['deuda']) ?></td>
+                        <td><?= htmlspecialchars($u['max_libros']) ?></td>
                     </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
