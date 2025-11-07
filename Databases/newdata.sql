@@ -1,227 +1,239 @@
--- DATABASE: Biblioteca
-CREATE DATABASE IF NOT EXISTS Biblioteca CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE Biblioteca;
 
--- =============================
--- TABLE: ADMINISTRADOR
--- =============================
-DROP TABLE IF EXISTS ADMINISTRADOR;
-CREATE TABLE ADMINISTRADOR (
-  ID_ADMIN TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_USUARIO SMALLINT UNSIGNED,
-  CREAR_USUARIO TINYINT(1) DEFAULT 0,
-  CARGO VARCHAR(22),
-  PERMISOS_ESPECIALES VARCHAR(86),
-  PRIMARY KEY (ID_ADMIN)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-INSERT INTO ADMINISTRADOR VALUES
-(1,101,0,'DIRECTOR EJECUTIVO','ACCESO A INFORMES FINANCIEROS'),
-(2,102,1,'JEFE DE ADQUISICIONES','AUTORIZACION PARA FIRMAR CONTRATOS CON EDITORIALES Y GESTIONAR EL PRESUPUESTO DE COMPRA'),
-(3,103,1,'TECNICO DE SISTEMAS','CAPACIDAD PARA REINICIAR SERVIDORES Y REALIZAR COPIAS DE SEGURIDAD DE EMERGENCIA'),
-(4,104,0,'ASISTENTE DE PRESTAMOS','PUEDE ANULAR MULTAS DE USUARIOS');
-
--- =============================
--- TABLE: CONTROL_RESERVAS
--- =============================
-DROP TABLE IF EXISTS CONTROL_RESERVAS;
-CREATE TABLE CONTROL_RESERVAS (
-  ID_CONTROL SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_LIBRO SMALLINT UNSIGNED,
-  NUMERO_RESERVAS_ACTIVAS TINYINT,
-  ULTIMA_ACTUALIZACION DATETIME,
-  PRIMARY KEY (ID_CONTROL)
+-- ====================================
+-- TABLE: rol
+-- ====================================
+CREATE TABLE rol (
+  id_rol TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre_rol VARCHAR(40),
+  descripcion VARCHAR(150),
+  PRIMARY KEY (id_rol)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO CONTROL_RESERVAS VALUES
-(903,203,0,'2025-08-10 13:15:48'),
-(911,201,1,'2025-09-28 09:45:00'),
-(912,202,1,'2025-09-19 11:13:04'),
-(914,204,4,'2025-10-21 14:23:00');
+INSERT INTO rol VALUES
+(1,'administrador_sistema','gestiona usuarios, configura el sistema y realiza mantenimiento a la base de datos'),
+(2,'bibliotecario','registra nuevos libros, gestiona prestamos y devoluciones y atiende a los usuarios'),
+(3,'catalogador','se encarga de la entrada detallada de metadatos de nuevos ejemplares'),
+(4,'usuario/lector','puede buscar libros, ver su historial de prestamos y reservar ejemplares');
 
--- =============================
--- TABLE: EJEMPLARES
--- =============================
-DROP TABLE IF EXISTS EJEMPLARES;
-CREATE TABLE EJEMPLARES (
-  ID_EJEMPLAR SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_LIBRO SMALLINT UNSIGNED,
-  ID_INVENTARIO SMALLINT UNSIGNED,
-  CODIGO_INVENTARIO VARCHAR(9),
-  UBICACION VARCHAR(31),
-  ESTADO VARCHAR(10),
-  PRIMARY KEY (ID_EJEMPLAR)
+-- ====================================
+-- TABLE: usuario
+-- ====================================
+CREATE TABLE usuario (
+  id_usuario SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(50),
+  tipo_usuario VARCHAR(20),
+  email VARCHAR(50),
+  telefono VARCHAR(20),
+  fecha_registro DATE,
+  estado VARCHAR(15),
+  max_libros TINYINT DEFAULT 3,
+  deuda FLOAT DEFAULT 0,
+  PRIMARY KEY (id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO EJEMPLARES VALUES
-(401,201,301,'EJ-201-01','SALA GENERAL A-5','PRESTADO'),
-(402,202,302,'EJ-202-02','SECCION TECNOLOGIA T-12','DISPONIBLE'),
-(403,203,303,'EJ-203-03','SALA GENERAL A-8','DISPONIBLE'),
-(404,204,304,'EJ-204-04','SECCION INFANTIL','PRESTADO');
+INSERT INTO usuario VALUES
+(101,'ana lopez','estudiante','analopez01@gmail.com','829-525-0944','2025-01-15','activo',3,0),
+(102,'juan perez','maestro','perezjuan25@gmail.com','809-710-0045','2025-03-02','activo',3,0),
+(103,'maria gomez','estudiante','mariag365@gmail.com','849-263-1035','2025-04-25','inactivo',3,0),
+(104,'pedro martinez','estudiante','pedromartinez@gmail.com','849-265-2555','2025-03-10','suspendido',3,0);
 
--- =============================
--- TABLE: INVENTARIO
--- =============================
-DROP TABLE IF EXISTS INVENTARIO;
-CREATE TABLE INVENTARIO (
-  ID_INVENTARIO SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_LIBRO SMALLINT UNSIGNED,
-  TOTAL_EJEMPLARES TINYINT,
-  DISPONIBLES TINYINT,
-  PRESTADOS TINYINT,
-  RESERVADOS TINYINT,
-  FECHA_ACTUALIZADA DATE,
-  ID_ADMIN TINYINT UNSIGNED,
-  PRIMARY KEY (ID_INVENTARIO)
+-- ====================================
+-- TABLE: administrador
+-- ====================================
+CREATE TABLE administrador (
+  id_admin TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_usuario SMALLINT UNSIGNED,
+  crear_usuario TINYINT(1) DEFAULT 0,
+  cargo VARCHAR(22),
+  permisos_especiales VARCHAR(86),
+  PRIMARY KEY (id_admin),
+  CONSTRAINT fk_admin_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuario(id_usuario) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO INVENTARIO VALUES
+INSERT INTO administrador VALUES
+(1,101,0,'director ejecutivo','acceso a informes financieros'),
+(2,102,1,'jefe de adquisiciones','editoriales y gestionar el presupuesto de compra'),
+(3,103,1,'tecnico de sistemas','capacidad para reiniciar servidores y realizar copias de seguridad de emergencia'),
+(4,104,0,'asistente de prestamos','puede anular multas de usuarios');
+
+-- ====================================
+-- TABLE: libro
+-- ====================================
+CREATE TABLE libro (
+  id_libro SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_rol TINYINT UNSIGNED,
+  titulo VARCHAR(50),
+  autor VARCHAR(40),
+  editorial VARCHAR(30),
+  anio_publicacion SMALLINT,
+  isbn VARCHAR(20),
+  categoria VARCHAR(30),
+  estado VARCHAR(15),
+  PRIMARY KEY (id_libro),
+  CONSTRAINT fk_libro_rol FOREIGN KEY (id_rol)
+    REFERENCES rol(id_rol) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO libro VALUES
+(201,1,'cien años de soledad','gabriel garcia marquez','editorial sur',1967,'978-6071110000','novela','disponible'),
+(202,2,'fundamentos de programacion','carlos ruiz','tech press',2018,'978-8426727282','informatica','reservado'),
+(203,3,'aventuras en el tiempo','sofia alonzo','joven lector',2022,'978-9588611135','ficcion','perdido'),
+(204,4,'el principito','antoine de saint-exupery','salamandra',1943,'978-8478441951','literatura infantil','prestado');
+
+-- ====================================
+-- TABLE: inventario
+-- ====================================
+CREATE TABLE inventario (
+  id_inventario SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_libro SMALLINT UNSIGNED,
+  total_ejemplares TINYINT,
+  disponibles TINYINT,
+  prestados TINYINT,
+  reservados TINYINT,
+  fecha_actualizada DATE,
+  id_admin TINYINT UNSIGNED,
+  PRIMARY KEY (id_inventario),
+  CONSTRAINT fk_inventario_libro FOREIGN KEY (id_libro)
+    REFERENCES libro(id_libro) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_inventario_admin FOREIGN KEY (id_admin)
+    REFERENCES administrador(id_admin) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO inventario VALUES
 (301,201,5,4,2,1,'2025-10-03',1),
 (302,202,10,9,0,1,'2025-09-25',2),
 (303,203,3,3,0,0,'2025-10-15',3),
 (304,204,7,0,3,4,'2024-07-18',4);
 
--- =============================
--- TABLE: LIBRO
--- =============================
-DROP TABLE IF EXISTS LIBRO;
-CREATE TABLE LIBRO (
-  ID_LIBRO SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_ROL TINYINT UNSIGNED,
-  TITULO VARCHAR(50),
-  AUTOR VARCHAR(40),
-  EDITORIAL VARCHAR(30),
-  ANIO_PUBLICACION SMALLINT,
-  ISBN VARCHAR(20),
-  CATEGORIA VARCHAR(30),
-  ESTADO VARCHAR(15),
-  PRIMARY KEY (ID_LIBRO)
+-- ====================================
+-- TABLE: ejemplares
+-- ====================================
+CREATE TABLE ejemplares (
+  id_ejemplar SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_libro SMALLINT UNSIGNED,
+  id_inventario SMALLINT UNSIGNED,
+  codigo_inventario VARCHAR(9),
+  ubicacion VARCHAR(31),
+  estado VARCHAR(10),
+  PRIMARY KEY (id_ejemplar),
+  CONSTRAINT fk_ejemplar_libro FOREIGN KEY (id_libro)
+    REFERENCES libro(id_libro) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_ejemplar_inventario FOREIGN KEY (id_inventario)
+    REFERENCES inventario(id_inventario) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO LIBRO VALUES
-(201,1,'CIEN AÑOS DE SOLEDAD','GABRIEL GARCIA MARQUEZ','EDITORIAL SUR',1967,'978-6071110000','NOVELA','DISPONIBLE'),
-(202,2,'FUNDAMENTOS DE PROGRAMACION','CARLOS RUIZ','TECH PRESS',2018,'978-8426727282','INFORMATICA','RESERVADO'),
-(203,3,'AVENTURAS EN EL TIEMPO','SOFIA ALONZO','JOVEN LECTOR',2022,'978-9588611135','FICCION','PERDIDO'),
-(204,4,'EL PRINCIPITO','ANTOINE DE SAINT-EXUPERY','SALAMANDRA',1943,'978-8478441951','LITERATURA INFANTIL','PRESTADO');
+INSERT INTO ejemplares VALUES
+(401,201,301,'ej-201-01','sala general a-5','prestado'),
+(402,202,302,'ej-202-02','seccion tecnologia t-12','disponible'),
+(403,203,303,'ej-203-03','sala general a-8','disponible'),
+(404,204,304,'ej-204-04','seccion infantil','prestado');
 
--- =============================
--- TABLE: NOTIFICACION
--- =============================
-DROP TABLE IF EXISTS NOTIFICACION;
-CREATE TABLE NOTIFICACION (
-  ID_NOTIFICACION SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_USUARIO SMALLINT UNSIGNED,
-  TIPO_NOTIFICACION VARCHAR(30),
-  FECHA_NOTIFICACION DATETIME,
-  MENSAJE VARCHAR(255),
-  ESTADO VARCHAR(10),
-  PRIMARY KEY (ID_NOTIFICACION)
+-- ====================================
+-- TABLE: control_reservas
+-- ====================================
+CREATE TABLE control_reservas (
+  id_control SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_libro SMALLINT UNSIGNED,
+  numero_reservas_activas TINYINT,
+  ultima_actualizacion DATETIME,
+  PRIMARY KEY (id_control),
+  CONSTRAINT fk_control_libro FOREIGN KEY (id_libro)
+    REFERENCES libro(id_libro) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO NOTIFICACION VALUES
-(701,101,'VENCIMIENTO DE PRESTAMO','2025-03-11 10:00:00','SU PRESTAMO DEL LIBRO VENCE PRONTO','NO LEIDA'),
-(702,102,'DEVOLUCION EXITOSA','2025-03-11 15:30:00','LIBRO DEVUELTO CON EXITO','LEIDA'),
-(703,103,'BIENVENIDA','2025-10-25 16:45:00','BIENVENIDO A NUESTRA BIBLIOTECA','NO LEIDA'),
-(711,101,'VENCIMIENTO DE PRESTAMO','2025-11-03 10:00:00','SU PRESTAMO DEL LIBRO VENCE PRONTO','NO LEIDA'),
-(712,102,'DEVOLUCION EXITOSA','2025-11-03 15:30:00','LIBRO DEVUELTO CON EXITO','LEIDA'),
-(713,103,'BIENVENIDA','2025-10-25 16:45:00','BIENVENIDO A NUESTRA BIBLIOTECA','NO LEIDA'),
-(714,104,'RESERVA EXITOSA','2025-10-29 09:15:25','SE HA REALIZADO UNA RESERVA','LEIDA');
+INSERT INTO control_reservas VALUES
+(903,203,0,'2025-08-10 13:15:48'),
+(911,201,1,'2025-09-28 09:45:00'),
+(912,202,1,'2025-09-19 11:13:04'),
+(914,204,4,'2025-10-21 14:23:00');
 
--- =============================
--- TABLE: PRESTAMO
--- =============================
-DROP TABLE IF EXISTS PRESTAMO;
-CREATE TABLE PRESTAMO (
-  ID_PRESTAMO SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_USUARIO SMALLINT UNSIGNED,
-  ID_EJEMPLAR SMALLINT UNSIGNED,
-  FECHA_PRESTAMO DATE,
-  FECHA_DEVOLUCION_PREVISTA DATE,
-  FECHA_DEVOLUCION_REAL DATE,
-  ESTADO VARCHAR(15),
-  PRIMARY KEY (ID_PRESTAMO)
+-- ====================================
+-- TABLE: reservas
+-- ====================================
+CREATE TABLE reservas (
+  id_reserva SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_usuario SMALLINT UNSIGNED,
+  id_libro SMALLINT UNSIGNED,
+  fecha_reserva DATE,
+  fecha_caducidad DATE,
+  estado VARCHAR(15),
+  PRIMARY KEY (id_reserva),
+  CONSTRAINT fk_reserva_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuario(id_usuario) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_reserva_libro FOREIGN KEY (id_libro)
+    REFERENCES libro(id_libro) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO PRESTAMO VALUES
-(501,101,401,'2025-07-15','2025-07-25','2025-07-27','ACTIVO'),
-(502,102,402,'2025-06-10','2025-06-25','2025-06-30','DEVUELTO'),
-(503,103,403,'2025-08-02','2025-08-10','2025-08-15','PERDIDO'),
-(504,104,404,'2025-10-23','2025-11-02','2025-11-05','RESERVADO');
+INSERT INTO reservas VALUES
+(801,101,201,'2025-08-25',NULL,'pendiente'),
+(802,102,202,'2025-09-15',NULL,'pendiente'),
+(803,103,203,'2025-09-25',NULL,'vencida'),
+(804,104,204,'2025-10-30',NULL,'en proceso');
 
--- =============================
--- TABLE: RENOVACION
--- =============================
-DROP TABLE IF EXISTS RENOVACION;
-CREATE TABLE RENOVACION (
-  ID_RENOVACION SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_PRESTAMO SMALLINT UNSIGNED,
-  FECHA_RENOVACION DATE,
-  FECHA_NUEVA_DEVOLUCION DATE,
-  PRIMARY KEY (ID_RENOVACION)
+-- ====================================
+-- TABLE: prestamo
+-- ====================================
+CREATE TABLE prestamo (
+  id_prestamo SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_usuario SMALLINT UNSIGNED,
+  id_ejemplar SMALLINT UNSIGNED,
+  fecha_prestamo DATE,
+  fecha_devolucion_prevista DATE,
+  fecha_devolucion_real DATE,
+  estado VARCHAR(15),
+  PRIMARY KEY (id_prestamo),
+  CONSTRAINT fk_prestamo_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuario(id_usuario) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_prestamo_ejemplar FOREIGN KEY (id_ejemplar)
+    REFERENCES ejemplares(id_ejemplar) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO RENOVACION VALUES
+INSERT INTO prestamo VALUES
+(501,101,401,'2025-07-15','2025-07-25','2025-07-27','activo'),
+(502,102,402,'2025-06-10','2025-06-25','2025-06-30','devuelto'),
+(503,103,403,'2025-08-02','2025-08-10','2025-08-15','perdido'),
+(504,104,404,'2025-10-23','2025-11-02','2025-11-05','reservado');
+
+-- ====================================
+-- TABLE: renovacion
+-- ====================================
+CREATE TABLE renovacion (
+  id_renovacion SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_prestamo SMALLINT UNSIGNED,
+  fecha_renovacion DATE,
+  fecha_nueva_devolucion DATE,
+  PRIMARY KEY (id_renovacion),
+  CONSTRAINT fk_renovacion_prestamo FOREIGN KEY (id_prestamo)
+    REFERENCES prestamo(id_prestamo) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO renovacion VALUES
 (601,501,'2025-11-14','2025-11-29'),
 (602,502,'2025-11-07','2025-11-22'),
 (603,503,'2025-11-17','2025-12-02'),
 (604,504,'2025-11-25','2025-12-10');
 
--- =============================
--- TABLE: RESERVAS
--- =============================
-DROP TABLE IF EXISTS RESERVAS;
-CREATE TABLE RESERVAS (
-  ID_RESERVA SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  ID_USUARIO SMALLINT UNSIGNED,
-  ID_LIBRO SMALLINT UNSIGNED,
-  FECHA_RESERVA DATE,
-  FECHA_CADUCIDAD DATE,
-  ESTADO VARCHAR(15),
-  PRIMARY KEY (ID_RESERVA)
+-- ====================================
+-- TABLE: notificacion
+-- ====================================
+CREATE TABLE notificacion (
+  id_notificacion SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_usuario SMALLINT UNSIGNED,
+  tipo_notificacion VARCHAR(30),
+  fecha_notificacion DATETIME,
+  mensaje VARCHAR(255),
+  estado VARCHAR(10),
+  PRIMARY KEY (id_notificacion),
+  CONSTRAINT fk_notificacion_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuario(id_usuario) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO RESERVAS VALUES
-(801,101,201,'2025-08-25',NULL,'PENDIENTE'),
-(802,102,202,'2025-09-15',NULL,'PENDIENTE'),
-(803,103,203,'2025-09-25',NULL,'VENCIDA'),
-(804,104,204,'2025-10-30',NULL,'EN PROCESO');
-
--- =============================
--- TABLE: ROL
--- =============================
-DROP TABLE IF EXISTS ROL;
-CREATE TABLE ROL (
-  ID_ROL TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  NOMBRE_ROL VARCHAR(40),
-  DESCRIPCION VARCHAR(150),
-  PRIMARY KEY (ID_ROL)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO ROL VALUES
-(1,'ADMINISTRADOR_SISTEMA','GESTIONA USUARIOS, CONFIGURA EL SISTEMA Y REALIZA MANTENIMIENTO A LA BASE DE DATOS'),
-(2,'BIBLIOTECARIO','REGISTRA NUEVOS LIBROS, GESTIONA PRESTAMOS Y DEVOLUCIONES Y ATIENDE A LOS USUARIOS'),
-(3,'CATALOGADOR','SE ENCARGA DE LA ENTRADA DETALLADA DE METADATOS DE NUEVOS EJEMPLARES'),
-(4,'USUARIO/LECTOR','PUEDE BUSCAR LIBROS, VER SU HISTORIAL DE PRESTAMOS Y RESERVAR EJEMPLARES');
-
--- =============================
--- TABLE: USUARIO
--- =============================
-DROP TABLE IF EXISTS USUARIO;
-CREATE TABLE USUARIO (
-  ID_USUARIO SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  NOMBRE VARCHAR(50),
-  TIPO_USUARIO VARCHAR(20),
-  EMAIL VARCHAR(50),
-  TELEFONO VARCHAR(20),
-  FECHA_REGISTRO DATE,
-  ESTADO VARCHAR(15),
-  MAX_LIBROS TINYINT DEFAULT 3,
-  DEUDA FLOAT DEFAULT 0,
-  PRIMARY KEY (ID_USUARIO)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO USUARIO VALUES
-(101,'ANA LOPEZ','ESTUDIANTE','ANALOPEZ01@GMAIL.COM','829-525-0944','2025-01-15','ACTIVO',3,0),
-(102,'JUAN PEREZ','MAESTRO','PEREZJUAN25@GMAIL.COM','809-710-0045','2025-03-02','ACTIVO',3,0),
-(103,'MARIA GOMEZ','ESTUDIANTE','MARIAG365@GMAIL.COM','849-263-1035','2025-04-25','INACTIVO',3,0),
-(104,'PEDRO MARTINEZ','ESTUDIANTE','PEDROMARTINEZ@GMAIL.COM','849-265-2555','2025-03-10','SUSPENDIDO',3,0);
+INSERT INTO notificacion VALUES
+(701,101,'vencimiento de prestamo','2025-03-11 10:00:00','su prestamo del libro vence pronto','no leida'),
+(702,102,'devolucion exitosa','2025-03-11 15:30:00','libro devuelto con exito','leida'),
+(703,103,'bienvenida','2025-10-25 16:45:00','bienvenido a nuestra biblioteca','no leida'),
+(711,101,'vencimiento de prestamo','2025-11-03 10:00:00','su prestamo del libro vence pronto','no leida'),
+(712,102,'devolucion exitosa','2025-11-03 15:30:00','libro devuelto con exito','leida'),
+(713,103,'bienvenida','2025-10-25 16:45:00','bienvenido a nuestra biblioteca','no leida'),
+(714,104,'reserva exitosa','2025-10-29 09:15:25','se ha realizado una reserva','leida');
